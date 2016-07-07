@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebSockets</title>
+
+<style type="text/css">
+#wrapper {
+	position: relative;
+	height: 200px;
+	width: 300px;
+	background-color: #cde;
+	border: 1px solid blue;
+}
+
+#list {
+	margin: 0px;
+	padding: 0px;
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	width: inherit;
+	overflow: hidden;
+	overflow-y: scroll;
+	border: 1px solid red;
+}
+
+#message {
+	width: 300px;
+	height: 50px;
+	border: 2px dotted red;
+	display: none;
+}
+
+table, th, td {
+	border: 1px solid black;
+}
+</style>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+	var connection = new WebSocket("ws://localhost:8080/chat");
+
+	connection.onopen = function() {
+
+		console.log("WS connection");
+	};
+
+	connection.onmessage = function(message) {	
+     $(document).ready(function() {	
+		var mes1 = JSON.parse(message.data);
+		console.log("THIS CAME BACK!!!::    " + mes1.data);
+		if(mes1.action==='subscribe' || mes1.action==='unsubscribe'){
+			updateList(mes1);
+		}
+		else {
+			
+			var ul = document.getElementById("list"), div = document.getElementById("wrapper"), input = document.getElementById("message"), flag=false, li;
+			li = document.createElement("LI");
+			li.innerHTML = "[" + mes1.user + "]" + " says: "
+					+ mes1.message;
+			ul.appendChild(li);
+			li.scrollIntoView();
+			if(ul.offsetHeight >= div.offsetHeight && flag !== true){
+		        ul.style.height = div.offsetHeight + "px";
+		        flag = true;
+		      }
+			document.getElementById("message").value = "";			
+		}
+});
+
+	}
+
+	function newChat() {
+		var username = document.getElementById("username").value;
+		var chat = new Message("subscribe", username);
+		connection.send(JSON.stringify(chat));
+	}
+	function leaveChat() {
+		var username = document.getElementById("username").value;
+		var chat = new Message("unsubscribe", username);
+		connection.send(JSON.stringify(chat));
+	}
+	function updateList(mes1) {
+		
+		var action = mes1.action;
+		var user = mes1.user;
+		console.log("ACTION: " + action);
+		console.log("USER: " + user);
+		
+		document.getElementById("join").innerHTML = "[" + user + "]" + " has joined the chat! <br/>";
+		
+		$('#chatRoom').append( user + ' <br/>');
+		
+		
+	}
+	function sendMessage() {
+		var message = document.getElementById("message").value;
+		var user = document.getElementById("username").value;
+		var msg = new Message("message", message, user);
+		connection.send(JSON.stringify(msg));
+	}
+
+	function Message(type, value, user) {
+		this.type = type;
+		this.value = value;
+		this.user = user;
+	}
+	$(document).ready(function() {
+		$("message").hide();
+
+	});
+
+	$(document).ready(
+			function() {
+				$("button").click(
+						function() {
+							$("p").hide("slow"), $('#message').show("slow"), $(
+									'#message').focus();
+						});
+			});
+
+	$(document).ready(
+			function(e) {
+				document.getElementById("message").onkeypress = function(e) {
+					e = e || window.event;
+					var charCode = (typeof e.which == "number") ? e.which
+							: e.keyCode;
+					if (charCode == 13) {
+						sendMessage();
+					}
+				};
+			});
+</script>
+
+
+
+</head>
+
+<body>
+<body>
+	<div>
+		<p>
+			<input id="username" placeholder="Enter your username">
+			<button type="button" id="send" onclick="newChat()">Click to
+				start!</button>
+		</p>
+	</div>
+	<table>
+		<tr>
+			<th>ChatRoom Messages:</th>
+			<th>ChatRoom Participants:</th>
+		<tr>
+		<tr>
+			<td rowspan="2">
+				<div id="wrapper">
+					<ul id="list"></ul>
+				</div> <input type="message" id="message" name="text"
+				placeholder="Enter message">
+				
+			</td>
+			<button type="button" id="none" value="leave" onclick="leaveChat()">Click to
+				leave!</button>
+			<td>
+				<div id="chatRoom"></div>
+			</td>
+		</tr>
+		<tr>
+			<td id="join">No one has joined yet...</td>
+		</tr>
+	</table>
+
+</body>
+<div></div>
+
+
+<br>
+
+
+</body>
+</html>

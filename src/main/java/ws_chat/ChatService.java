@@ -25,57 +25,28 @@ public class ChatService {
 	Pipes<UserListMessage> _pipes2;
 	
 
-	List<String> list = new ArrayList<String>();
-	
-	/*@OnInit
-	public void startup(Result<Void> r){
-
-
-		_pipes.subscribe(Pipe.in(x -> {
-			//Thread.dumpStack();
-			
-			handleMessage(x);
-		}));
-		
-   
-		r.ok(null);
-	
-	} */
-
+	//List<String> list = new ArrayList<String>();
 	
 	
 	public void sendMessage(ChatMessage msg, Result<Void> r){
 		
-		System.out.println("ChatService: "+ msg);		
 		_pipes.send(msg, r);
 				
 	}
 	
-	public void subscribe2( UserListMessage name, Result<Void> r){
-		System.out.println("ChatService.subscribe0: " + name);
-		if(name.action.equals("subscribe")){
-			list.add(name.user);
-			_pipes2.send(name, r);
-		}
-		else if(name.action.equals("unsubscribe")){
-			list.remove(name.user);
-			_pipes2.send(name, r);
-		}
-		
-		//r.ok(list);
-		//UserListMessage send = new UserListMessage("UserListMessage","subscribe",name,list);
-		
+	public void subscribe2( UserListMessage list, Result<Void> r){
+		System.out.println("ChatService.subscribe0: " + list);
+	//	if(list.action.equals("subscribe")){
+	//		list.add(name);
+			_pipes2.send(list, r);
+	//	}
+	//	else if(list.action.equals("unsubscribe")){
+	//		list.remove(name);
+	//		_pipes2.send(list, r);
+	//	}
 		
 	}
 	
-	/*public void unsubscribe2( String name, Result<Void> r){
-		System.out.println("ChatService.subscribe0: " + name);
-		list.remove(name);
-		//r.ok(list);
-		UserListMessage send = new UserListMessage("UserListMessage","unsubscribe",name,list);
-		_pipes2.send(send, r);
-		
-	}*/
 
 
 }

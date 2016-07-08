@@ -3,6 +3,7 @@ package ws_chat;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -40,11 +41,18 @@ public class ChatSession implements ServiceWebSocket<String, String> {
 	@Inject
 	@Service("pipe:///messages")
 	Pipes<UserListMessage> _pipes2;
+	
 
 
 	private Pipe<ChatMessage> _pipeIn;
+	private Pipe<UserListMessage> _ListIn;
+	
+	private ArrayList<String> list = new ArrayList();
+	private UserListMessage ulist = new UserListMessage("","", list); 
+
 
 	public void open(WebSocket<String> ws) {
+		
 
 		ResultPipeIn<ChatMessage> resultPipe;
 
@@ -63,6 +71,8 @@ public class ChatSession implements ServiceWebSocket<String, String> {
 		_pipes.subscribe(resultPipe);
 
 		_pipeIn = resultPipe.pipe();
+		
+		_ListIn = listPipe.pipe();
 
 
 	}
@@ -76,15 +86,17 @@ public class ChatSession implements ServiceWebSocket<String, String> {
 		ws.next(x);
 	}
 
+
+	public void exit(){
+		_ListIn.close();
+		_pipeIn.close();
+	}
+
 	@Override
 	public void close(WebSocketClose code, String msg, WebSocket<String> webSocket) throws IOException {
 		_pipeIn.close();
+		_ListIn.close();
 	}
-
-	public void exit(){
-		_pipeIn.close();
-	}
-
 
 	public static void main(String[] args) {
 		Web.websocket("/chat").to(ChatSession.class);
@@ -101,14 +113,25 @@ public class ChatSession implements ServiceWebSocket<String, String> {
 
 		Map<String, String> map = (Map) reader.readObject();
 
-		String user2 = map.get("value");
-
-		if (map.get("type").equals("subscribe") ){			
-															// "subscribe" / "user"
-			UserListMessage ulist = new UserListMessage(map.get("type"),map.get("value")); 
+		//System.out.println("THE MAP " + map.toString());
+		
+		String user = map.get("user");
+		
+		if (map.get("value").equals("subscribe") ){			
+			// "subscribe" / "user"
+			ulist.add(user);
+			ulist.setLast(user);
+			ulist.setAction("subscribe");
 			_chat.subscribe2(ulist, Result.ignore());
 		}
-
+		else if ( map.get("value").equals("unsubscribe")){
+			ulist.remove(user);
+			ulist.setLast(user);
+			ulist.setAction("unsubscribe");
+			_chat.subscribe2(ulist, Result.ignore());
+			exit();
+			
+		}
 		else {
 			ChatMessage cmsg = new ChatMessage(map.get("user"),map.get("value")); 
 			_chat.sendMessage(cmsg, Result.ignore());

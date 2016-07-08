@@ -50,15 +50,19 @@ table, th, td {
 	connection.onmessage = function(message) {	
      $(document).ready(function() {	
 		var mes1 = JSON.parse(message.data);
-		console.log("THIS CAME BACK!!!::    " + mes1.data);
-		if(mes1.action==='subscribe' || mes1.action==='unsubscribe'){
-			updateList(mes1);
-		}
-		else {
+		var ulist = mes1.list;
+		var user = mes1.user;
+		
+		if(typeof ulist !== "undefined"){
+			var last_user = list[list.length-1];
+
+			updateList(mes1, last_user);	
+		}				
+		if(typeof mes1.message !== "undefined"){
 			
 			var ul = document.getElementById("list"), div = document.getElementById("wrapper"), input = document.getElementById("message"), flag=false, li;
 			li = document.createElement("LI");
-			li.innerHTML = "[" + mes1.user + "]" + " says: "
+			li.innerHTML = "[" + user + "]" + " says: "
 					+ mes1.message;
 			ul.appendChild(li);
 			li.scrollIntoView();
@@ -66,8 +70,12 @@ table, th, td {
 		        ul.style.height = div.offsetHeight + "px";
 		        flag = true;
 		      }
-			document.getElementById("message").value = "";			
+				
+			document.getElementById("message").value = "";	
+			
 		}
+					
+		
 });
 
 	}
@@ -81,29 +89,40 @@ table, th, td {
 		var username = document.getElementById("username").value;
 		var chat = new Message("unsubscribe", username);
 		connection.send(JSON.stringify(chat));
+		connection.close();
+	
 	}
 	function updateList(mes1) {
 		
+		var list = mes1.list;
 		var action = mes1.action;
-		var user = mes1.user;
-		console.log("ACTION: " + action);
-		console.log("USER: " + user);
+		var last_user = mes1.user;
+				
+		if( action === "subscribe"){
+			document.getElementById("join").innerHTML = "[" + last_user + "]" + " has joined the chat! <br/>";
+						
+		}
+		else if ( action === "unsubscribe") {
+			document.getElementById("join").innerHTML = "[" + last_user + "]" + " has left the chat! <br/>";
+			
+		}
 		
-		document.getElementById("join").innerHTML = "[" + user + "]" + " has joined the chat! <br/>";
+		$('#chatRoom').empty();
 		
-		$('#chatRoom').append( user + ' <br/>');
-		
+		jQuery.each(list, function(index,item){
+			$('#chatRoom').append( item + ' <br/>');
+		});
 		
 	}
 	function sendMessage() {
 		var message = document.getElementById("message").value;
 		var user = document.getElementById("username").value;
-		var msg = new Message("message", message, user);
+		var msg = new Message(message, user);
+
 		connection.send(JSON.stringify(msg));
 	}
 
-	function Message(type, value, user) {
-		this.type = type;
+	function Message(value, user) {
 		this.value = value;
 		this.user = user;
 	}

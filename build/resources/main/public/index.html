@@ -52,26 +52,29 @@ table, th, td {
 		var mes1 = JSON.parse(message.data);
 		var ulist = mes1.list;
 		var user = mes1.user;
-		var message = mes1.message;
 		
 		if(typeof ulist !== "undefined"){
 			var last_user = list[list.length-1];
 
 			updateList(mes1, last_user);	
 		}				
-		if(typeof message !== "undefined"){
+		if(typeof mes1.message !== "undefined"){
+			
 			var ul = document.getElementById("list"), div = document.getElementById("wrapper"), input = document.getElementById("message"), flag=false, li;
 			li = document.createElement("LI");
 			li.innerHTML = "[" + user + "]" + " says: "
-					+ message;
+					+ mes1.message;
 			ul.appendChild(li);
 			li.scrollIntoView();
 			if(ul.offsetHeight >= div.offsetHeight && flag !== true){
 		        ul.style.height = div.offsetHeight + "px";
 		        flag = true;
 		      }
+				
 			document.getElementById("message").value = "";	
-		}	
+			
+		}
+					
 		
 });
 

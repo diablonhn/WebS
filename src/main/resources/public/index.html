@@ -2,200 +2,86 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WebSockets</title>
+<title>Baratine Chat</title>
 
 <style type="text/css">
-#wrapper {
-	position: relative;
-	height: 200px;
-	width: 300px;
-	background-color: #cde;
-	border: 1px solid blue;
+
+#room {
+  display: none;
+}
+
+#messages {
+  min-width: 400px;
+  height: 300px;
+  list-style: none;
+  overflow:hidden;
+  overflow-y:scroll;
 }
 
 #list {
-	margin: 0px;
-	padding: 0px;
-	position: absolute;
-	bottom: 0px;
-	left: 0px;
-	width: inherit;
-	overflow: hidden;
-	overflow-y: scroll;
-	border: 1px solid red;
+  margin: 0;
+  padding: 10px;
+  height: 300px;
+  width: 120px;
+  overflow:hidden;
+  overflow-y:scroll;
+}
+
+#list li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 #message {
-	width: 300px;
-	height: 50px;
-	border: 2px dotted red;
-	display: none;
+  padding: 10px;
+  width: 96%;
+  background-color: #F0F8FF;
 }
 
+.control-message {
+  color: red;
+}
+
+.my-message {
+  color: blue;
+}
+
+
 table, th, td {
-	border: 1px solid black;
+  border: 1px solid black;
 }
 </style>
 
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script type="text/javascript">
-	var connection = new WebSocket("ws://localhost:8080/chat");
-
-	connection.onopen = function() {
-
-		console.log("WS connection");
-	};
-
-	connection.onmessage = function(message) {	
-     $(document).ready(function() {	
-		var mes1 = JSON.parse(message.data);
-		var ulist = mes1.list;
-		var user = mes1.user;
-		
-		if(typeof ulist !== "undefined"){
-			var last_user = list[list.length-1];
-
-			updateList(mes1, last_user);	
-		}				
-		if(typeof mes1.message !== "undefined"){
-			
-			var ul = document.getElementById("list"), div = document.getElementById("wrapper"), input = document.getElementById("message"), flag=false, li;
-			li = document.createElement("LI");
-			li.innerHTML = "[" + user + "]" + " says: "
-					+ mes1.message;
-			ul.appendChild(li);
-			li.scrollIntoView();
-			if(ul.offsetHeight >= div.offsetHeight && flag !== true){
-		        ul.style.height = div.offsetHeight + "px";
-		        flag = true;
-		      }
-				
-			document.getElementById("message").value = "";	
-			
-		}
-					
-		
-});
-
-	}
-
-	function newChat() {
-		var username = document.getElementById("username").value;
-		var chat = new Message("subscribe", username);
-		connection.send(JSON.stringify(chat));
-	}
-	function leaveChat() {
-		var username = document.getElementById("username").value;
-		var chat = new Message("unsubscribe", username);
-		connection.send(JSON.stringify(chat));
-		connection.close();
-	
-	}
-	function updateList(mes1) {
-		
-		var list = mes1.list;
-		var action = mes1.action;
-		var last_user = mes1.user;
-				
-		if( action === "subscribe"){
-			document.getElementById("join").innerHTML = "[" + last_user + "]" + " has joined the chat! <br/>";
-						
-		}
-		else if ( action === "unsubscribe") {
-			document.getElementById("join").innerHTML = "[" + last_user + "]" + " has left the chat! <br/>";
-			
-		}
-		
-		$('#chatRoom').empty();
-		
-		jQuery.each(list, function(index,item){
-			$('#chatRoom').append( item + ' <br/>');
-		});
-		
-	}
-	function sendMessage() {
-		var message = document.getElementById("message").value;
-		var user = document.getElementById("username").value;
-		var msg = new Message(message, user);
-
-		connection.send(JSON.stringify(msg));
-	}
-
-	function Message(value, user) {
-		this.value = value;
-		this.user = user;
-	}
-	$(document).ready(function() {
-		$("message").hide();
-
-	});
-
-	$(document).ready(
-			function() {
-				$("button").click(
-						function() {
-							$("p").hide("slow"), $('#message').show("slow"), $(
-									'#message').focus();
-						});
-			});
-
-	$(document).ready(
-			function(e) {
-				document.getElementById("message").onkeypress = function(e) {
-					e = e || window.event;
-					var charCode = (typeof e.which == "number") ? e.which
-							: e.keyCode;
-					if (charCode == 13) {
-						sendMessage();
-					}
-				};
-			});
-</script>
-
-
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="index.js"></script>
 </head>
 
 <body>
-<body>
-	<div>
-		<p>
-			<input id="username" placeholder="Enter your username">
-			<button type="button" id="send" onclick="newChat()">Click to
-				start!</button>
-		</p>
-	</div>
-	<table>
-		<tr>
-			<th>ChatRoom Messages:</th>
-			<th>ChatRoom Participants:</th>
-		<tr>
-		<tr>
-			<td rowspan="2">
-				<div id="wrapper">
-					<ul id="list"></ul>
-				</div> <input type="message" id="message" name="text"
-				placeholder="Enter message">
-				
-			</td>
-			<button type="button" id="none" value="leave" onclick="leaveChat()">Click to
-				leave!</button>
-			<td>
-				<div id="chatRoom"></div>
-			</td>
-		</tr>
-		<tr>
-			<td id="join">No one has joined yet...</td>
-		</tr>
-	</table>
+<div>
+  <input id="username" placeholder="Enter your username">
+  <button id="joinButton" type="button" onclick="joinChat()">Join chat</button>
+  <button id="leaveButton" type="button" value="leave" onclick="leaveChat()" disabled>Leave chat</button>
+</div>
 
-</body>
-<div></div>
-
-
-<br>
-
+<table id="room">
+  <tr>
+    <th>Room</th>
+    <th>Users</th>
+  <tr>
+    <td>
+      <ul id="messages"></ul>
+    </td>
+    <td>
+      <ul id="list"></ul>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <input type="text" id="message" name="text" placeholder="Enter message">
+    </td>
+  </tr>
+</table>
 
 </body>
 </html>

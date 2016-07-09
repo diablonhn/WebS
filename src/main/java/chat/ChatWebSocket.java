@@ -26,46 +26,46 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
   @Id
   private String _id;
 
-	@Inject
-	@Service
-	private ChatService _chat;
+  @Inject
+  @Service
+  private ChatService _chat;
 
-	@Inject
-	@Service("pipe:///messages")
-	private Pipes<Message> _messagePipes;
+  @Inject
+  @Service("pipe:///messages")
+  private Pipes<Message> _messagePipes;
   private Pipe<Message> _messagePipe;
 
   private String _user;
 
   @Override
-	public void open(WebSocket<Message> ws)
-	{
+  public void open(WebSocket<Message> ws)
+  {
     LOG.fine("opened websocket connection: " + _user + "," + _id + "," + this);
-	}
+  }
 
-	@Override
-	public void next(Message msg, WebSocket<Message> ws) throws IOException
-	{
+  @Override
+  public void next(Message msg, WebSocket<Message> ws) throws IOException
+  {
     LOG.fine("next message: " + msg);
 
-	  String type = msg.type();
-	  String user = msg.user();
-	  String value = msg.value();
+    String type = msg.type();
+    String user = msg.user();
+    String value = msg.value();
 
-		if ("join".equals(type)) {
-		  join(user, ws);
-		}
-		else if ("leave".equals(type)) {
-		  leave(user, ws, false);
-		}
-		else if ("message".equals(type)) {
+    if ("join".equals(type)) {
+      join(user, ws);
+    }
+    else if ("leave".equals(type)) {
+      leave(user, ws, false);
+    }
+    else if ("message".equals(type)) {
       ChatMessage chatMsg = (ChatMessage) new ChatMessage().user(user).value(value);
       _chat.sendMessage(chatMsg, Result.ignore());
-		}
-		else {
-		  throw new IOException("unknown message: " + msg);
-		}
-	}
+    }
+    else {
+      throw new IOException("unknown message: " + msg);
+    }
+  }
 
   @Override
   public void close(WebSocketClose code, String msg, WebSocket<Message> webSocket) throws IOException

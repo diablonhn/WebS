@@ -5,28 +5,28 @@ import java.util.List;
 
 public class UserListMessage extends Message
 {
-	private List<String> list = new ArrayList<String>();
+  private List<String> list = new ArrayList<String>();
 
-	public UserListMessage()
-	{
-	  type("list");
-	}
+  public UserListMessage()
+  {
+    type("list");
+  }
 
-	public UserListMessage users(List<String> l)
-	{
-	  list = l;
+  public UserListMessage users(List<String> l)
+  {
+    list = l;
 
-	  return this;
-	}
+    return this;
+  }
 
-	public List<String> users()
-	{
-	  return list;
-	}
+  public List<String> users()
+  {
+    return list;
+  }
 
-	@Override
-	public String toString()
-	{
-	  return getClass().getSimpleName() + "[" + list + "]";
-	}
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + list + "]";
+  }
 }

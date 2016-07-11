@@ -61,7 +61,7 @@ public class ChatService
   @Get("/chat")
   public void startChat(RequestWeb request)
   {
-    Injector injector = Services.current().injector();
+    Injector injector = request.injector();
 
     ChatWebSocket chat = injector.instance(ChatWebSocket.class);
 

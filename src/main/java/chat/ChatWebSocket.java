@@ -23,9 +23,6 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 {
   private static Logger LOG = Logger.getLogger(ChatWebSocket.class.getName());
 
-  @Id
-  private String _id;
-
   @Inject
   @Service
   private ChatService _chat;
@@ -40,7 +37,7 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
   @Override
   public void open(WebSocket<Message> ws)
   {
-    LOG.fine("opened websocket connection: " + _user + "," + _id + "," + this);
+    LOG.fine("opened websocket connection: " + _user + "," + this);
   }
 
   @Override
@@ -115,7 +112,9 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 
   public static void main(String[] args)
   {
-    Logger.getLogger(ChatWebSocket.class.getPackage().getName()).setLevel(Level.FINE);
+    Logger.getLogger("").setLevel(Level.FINEST);
+
+    //Logger.getLogger(ChatWebSocket.class.getPackage().getName()).setLevel(Level.FINE);
 
     Web.include(ChatWebSocket.class);
     Web.include(ChatService.class);

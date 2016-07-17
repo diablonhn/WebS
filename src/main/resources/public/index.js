@@ -25,6 +25,8 @@ function joinChat()
   
   connection.onclose = function(e) {
     console.log('closed websocket connection');
+    
+    hideRoom();
   };
   
   connection.onmessage = function(value) {
@@ -51,13 +53,18 @@ function joinChat()
   };
 }
 
-function leaveChat()
+function hideRoom()
 {
   $('#joinButton').prop('disabled', false);
   $('#leaveButton').prop('disabled', true);
   $('#username').prop('disabled', false);
   
   $('#room').hide();
+}
+
+function leaveChat()
+{
+  hideRoom();
 
   var username = $("#username").val();
   var msg = new Message("leave", username);

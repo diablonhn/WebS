@@ -8,16 +8,13 @@ import javax.inject.Inject;
 
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.service.Session;
-import io.baratine.vault.Id;
-import io.baratine.web.Path;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Web;
 import io.baratine.web.WebSocket;
 import io.baratine.web.WebSocketClose;
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.Pipes;
-import io.baratine.pipe.ResultPipeIn;
+import io.baratine.pipe.PipeBroker;
+import io.baratine.pipe.PipeSub;
 
 public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 {
@@ -29,7 +26,7 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 
   @Inject
   @Service("pipe:///messages")
-  private Pipes<Message> _messagePipes;
+  private PipeBroker<Message> _messagePipes;
   private Pipe<Message> _messagePipe;
 
   private String _user;
@@ -81,7 +78,7 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 
       ws.next(userListMsg);
 
-      ResultPipeIn<Message> messageResult = Pipe.in(msg -> {
+      PipeSub<Message> messageResult = Pipe.in(msg -> {
         ws.next(msg);
       });
 
@@ -108,16 +105,5 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
     if (! isClosed) {
       ws.close();
     }
-  }
-
-  public static void main(String[] args)
-  {
-    Logger.getLogger("").setLevel(Level.FINEST);
-
-    //Logger.getLogger(ChatWebSocket.class.getPackage().getName()).setLevel(Level.FINE);
-
-    Web.include(ChatWebSocket.class);
-    Web.include(ChatService.class);
-    Web.start();
   }
 }

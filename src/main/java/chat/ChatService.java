@@ -2,18 +2,19 @@ package chat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 import io.baratine.inject.Injector;
-import io.baratine.pipe.Pipes;
+import io.baratine.pipe.PipeBroker;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.service.Services;
 import io.baratine.service.Startup;
 import io.baratine.web.Get;
 import io.baratine.web.RequestWeb;
+import io.baratine.web.Web;
 
 @Startup
 @Service
@@ -23,7 +24,7 @@ public class ChatService
 
   @Inject
   @Service("pipe:///messages")
-  private Pipes<Message> _pipes;
+  private PipeBroker<Message> _pipes;
 
   private List<String> _userList = new ArrayList<String>();
 
@@ -66,5 +67,16 @@ public class ChatService
     ChatWebSocket chat = injector.instance(ChatWebSocket.class);
 
     request.upgrade(chat);
+  }
+
+  public static void main(String[] args)
+  {
+    Logger.getLogger("").setLevel(Level.FINEST);
+
+    //Logger.getLogger(ChatWebSocket.class.getPackage().getName()).setLevel(Level.FINE);
+
+    Web.include(ChatWebSocket.class);
+    Web.include(ChatService.class);
+    Web.start();
   }
 }

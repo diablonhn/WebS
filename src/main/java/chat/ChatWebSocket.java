@@ -78,7 +78,7 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 
       ws.next(userListMsg);
 
-      PipeSub<Message> messageResult = Pipe.in(msg -> {
+      PipeSub<Message> messageResult = PipeSub.of(msg -> {
         ws.next(msg);
       });
 

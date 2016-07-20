@@ -71,7 +71,7 @@ public class ChatService
 
   public static void main(String[] args)
   {
-    Logger.getLogger("").setLevel(Level.FINEST);
+    //Logger.getLogger("").setLevel(Level.FINEST);
 
     //Logger.getLogger(ChatWebSocket.class.getPackage().getName()).setLevel(Level.FINE);
 

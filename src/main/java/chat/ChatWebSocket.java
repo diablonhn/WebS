@@ -81,6 +81,8 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
     _user = user;
 
     _chat.join(user, (userList, e) -> {
+      LOG.fine("user joined: " + user);
+      
       UserListMessage userListMsg = new UserListMessage().users(userList);
 
       ws.next(userListMsg);
@@ -96,7 +98,9 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 
   private void onPipeReceive(Message msg)
   {
-    _ws.next(msg);
+    if (_ws != null) {
+      _ws.next(msg);
+    }
   }
 
   private void leave(String user, WebSocket<Message> ws, boolean isClosed)
@@ -105,6 +109,7 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
       return;
     }
 
+    _ws = null;
     _user = null;
     _chat.leave(user, Result.ignore());
 

@@ -1,5 +1,7 @@
 package chat;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -73,7 +75,7 @@ public class ChatService
   {
     //Logger.getLogger("").setLevel(Level.FINEST);
 
-    //Logger.getLogger(ChatWebSocket.class.getPackage().getName()).setLevel(Level.FINE);
+    Logger.getLogger(ChatWebSocket.class.getPackage().getName()).setLevel(Level.FINE);
 
     Web.include(ChatWebSocket.class);
     Web.include(ChatService.class);

@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import io.baratine.service.Result;
 import io.baratine.service.Service;
+import io.baratine.service.ServiceRef;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Web;
 import io.baratine.web.WebSocket;
@@ -31,10 +32,16 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 
   private String _user;
 
+  private WebSocket<Message> _ws;
+  private ChatWebSocket _me;
+
   @Override
   public void open(WebSocket<Message> ws)
   {
     LOG.fine("opened websocket connection: " + _user + "," + this);
+
+    _ws = ws;
+    _me = ServiceRef.current().as(ChatWebSocket.class);
   }
 
   @Override
@@ -79,12 +86,17 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
       ws.next(userListMsg);
 
       PipeSub<Message> messageResult = PipeSub.of(msg -> {
-        ws.next(msg);
+        _me.onPipeReceive(msg);
       });
 
       _messagePipes.subscribe(messageResult);
       _messagePipe = messageResult.pipe();
     });
+  }
+
+  private void onPipeReceive(Message msg)
+  {
+    _ws.next(msg);
   }
 
   private void leave(String user, WebSocket<Message> ws, boolean isClosed)

@@ -58,8 +58,10 @@ function hideRoom()
   $('#joinButton').prop('disabled', false);
   $('#leaveButton').prop('disabled', true);
   $('#username').prop('disabled', false);
-  
+
   $('#room').hide();
+
+  $('#list').empty();
 }
 
 function leaveChat()

@@ -26,11 +26,20 @@ function joinChat()
   connection.onclose = function(e) {
     console.log('closed websocket connection');
     
+    if (connection != this) {
+      return;
+    }
+
     hideRoom();
   };
   
   connection.onmessage = function(value) {
     console.log("received message: " + value.data);
+    
+    if (connection != this) {
+      return;
+    }
+
     var msg = JSON.parse(value.data);
     
     switch (msg.type) {

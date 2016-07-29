@@ -33,7 +33,6 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
   private String _user;
 
   private WebSocket<Message> _ws;
-  private ChatWebSocket _me;
 
   @Override
   public void open(WebSocket<Message> ws)
@@ -41,7 +40,6 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
     LOG.fine("opened websocket connection: " + _user + "," + this);
 
     _ws = ws;
-    _me = ServiceRef.current().as(ChatWebSocket.class);
   }
 
   @Override
@@ -82,13 +80,13 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
 
     _chat.join(user, (userList, e) -> {
       LOG.fine("user joined: " + user);
-      
+
       UserListMessage userListMsg = new UserListMessage().users(userList);
 
       ws.next(userListMsg);
 
       PipeSub<Message> messageResult = PipeSub.of(msg -> {
-        _me.onPipeReceive(msg);
+        onPipeReceive(msg);
       });
 
       _messagePipes.subscribe(messageResult);

@@ -13,11 +13,11 @@ apply plugin: 'maven'
 apply plugin: 'application'
 
 repositories {
-  mavenLocal();
+  mavenCentral();
 }
 
 dependencies {
-  compile 'io.baratine:baratine:0.11-SNAPSHOT'
+  compile 'io.baratine:baratine:1.0.0'
 }
 
 mainClassName='chat.ChatService'

@@ -2,9 +2,22 @@ package chat;
 
 public class Message
 {
+  private long id;
   private String type;
   private String user;
   private String value;
+
+  public final long id()
+  {
+    return id;
+  }
+
+  public final Message id(long val)
+  {
+    id = val;
+
+    return this;
+  }
 
   public final String type()
   {
@@ -45,6 +58,6 @@ public class Message
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + type + "," + user + "," + value + "]";
+    return getClass().getSimpleName() + "[" + id + "," + type + "," + user + "," + value + "]";
   }
 }

@@ -2,16 +2,31 @@ var connection = null;
 var userList = null;
 var userMe = null;
 
+var host = 'localhost:8080';
+
 function joinChat()
 {
   var username = $('#username').val();
   userMe = username;
-
+  
+  var useWebSockets = $('#useWebSockets').prop('checked');
+  
   $('#joinButton').prop('disabled', true);
   $('#leaveButton').prop('disabled', false);
   $('#username').prop('disabled', true);
+  $('#useWebSockets').prop('disabled', true);
+  
+  if (useWebSockets) {
+    setupWebSockets(username);
+  }
+  else {
+    setupLongPolling(username);
+  }
+}
 
-  connection = new WebSocket("ws://localhost:8080/chat");
+function setupWebSockets(username)
+{
+  connection = new WebSocket('ws://' + host + '/chat');
 
   connection.onopen = function() {
     console.log('opened websocket connection');
@@ -33,6 +48,14 @@ function joinChat()
     hideRoom();
   };
   
+  connection.onerror = function(e) {
+    if (connection != this) {
+      return;
+    }
+    
+    hideRoom();
+  };
+  
   connection.onmessage = function(value) {
     console.log("received message: " + value.data);
     
@@ -42,58 +65,117 @@ function joinChat()
 
     var msg = JSON.parse(value.data);
     
-    switch (msg.type) {
-      case "list":
-        updateList(msg.list);
-        break;
-      
-      case "join":
-        updateListJoin(msg.user);
-        break;
-      
-      case "leave":
-        updateListLeave(msg.user);
-        break;
-      
-      case "message":
-        onChatMessage(msg.user, msg.value);
-        break;
-    }
+    onReceive(msg);
   };
+}
+
+function onReceive(msg)
+{
+  if (! isConnected()) {
+    return;
+  }
+
+	switch (msg.type) {
+		case "list":
+			updateList(msg.users);
+			break;
+		
+		case "join":
+			updateListJoin(msg.user);
+			break;
+		
+		case "leave":
+			updateListLeave(msg.user);
+			break;
+		
+		case "message":
+			onChatMessage(msg.user, msg.value);
+			break;
+	}
+}
+
+function setupLongPolling(username)
+{
+  $.ajax({
+    url: 'http://' + host + '/join?user=' + username
+  }).done(function(data) {
+    updateList(data);
+    
+    poll(username);
+  }).fail(function() {
+    hideRoom();
+  });
+}
+
+function poll(username, lastMessageId)
+{
+  if (! isConnected()) {
+    return;
+  }
+
+  var idQuery = '';
+  if (lastMessageId != null) {
+    idQuery = 'id=' + lastMessageId;
+  }
+  
+  $.ajax({
+    url: 'http://' + host + '/getMessages?user=' + username + '&' + idQuery
+  }).done(function(list) {
+    if (list.length > 0 && lastMessageId == null) {
+      lastMessageId = 0;
+    }
+    
+    for (var i = 0; i < list.length; i++) {
+      var msg = list[i];
+      lastMessageId = Math.max(lastMessageId, msg.id);
+      onReceive(msg);
+    }
+    
+    poll(username, lastMessageId);
+  }).fail(function() {
+    hideRoom();
+  });
 }
 
 function hideRoom()
 {
+  connection = null;
+  userList = null;
+  userMe = null;
+
   $('#joinButton').prop('disabled', false);
   $('#leaveButton').prop('disabled', true);
   $('#username').prop('disabled', false);
+  $('#useWebSockets').prop('disabled', false);
 
   $('#room').hide();
-
+  $('#messages').empty();
   $('#list').empty();
 }
 
 function leaveChat()
 {
-  hideRoom();
-
   var username = $("#username").val();
   var msg = new Message("leave", username);
   
-  if (connection != null) {
-    var json = JSON.stringify(msg);
-  
-    console.log('leaving chat: ' + json);
-    connection.send(json);
-    connection.close();
-    
-    connection = null;
+  if (isConnected()) {
+		if (connection != null) {
+			var json = JSON.stringify(msg);
+	
+			console.log('leaving chat: ' + json);
+			connection.send(json);
+			connection.close();
+		
+			connection = null;
+		}
+		else {
+			$.ajax({
+				url: 'http://' + host + '/leave?user=' + username
+			});
+		}
   }
   
-  $('#messages').empty();
-  $('#list').empty();
-  userList = null;
-  userMe = null;
+  hideRoom();
 }
 
 function sendMessage()
@@ -109,6 +191,13 @@ function sendMessage()
     var json = JSON.stringify(msg);
     console.log('sending message: ' + json);
     connection.send(json);
+  }
+  else {
+    $.ajax({
+      url: 'http://' + host + '/send?user=' + username + '&msg=' + message
+    }).done(function(data) {
+      
+    });
   }
 }
 
@@ -158,6 +247,11 @@ function updateListLeave(user)
   $('#user_' + user).remove();
 }
 
+function isConnected()
+{
+  return userMe != null;
+}
+
 function onChatMessage(user, msg)
 {
   var html;
@@ -194,11 +288,15 @@ var Message = function(type, user, value) {
 }
 
 $(document).ready(function(e) {
-  document.getElementById('message').onkeypress = function(e) {
+  $('#message').keypress(function(e) {
     e = e || window.event;
     var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
     if (charCode == 13) {
       sendMessage();
     }
-  };
+  });
+  
+  $(window).on("beforeunload", function() { 
+    leaveChat();
+  })
 });

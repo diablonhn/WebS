@@ -58,8 +58,7 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
       leave(user, ws, false);
     }
     else if ("message".equals(type)) {
-      ChatMessage chatMsg = (ChatMessage) new ChatMessage().user(user).value(value);
-      _chat.sendMessage(chatMsg, Result.ignore());
+      _chat.send(user, value, Result.ignore());
     }
     else {
       throw new IOException("unknown message: " + msg);
@@ -77,11 +76,12 @@ public class ChatWebSocket implements ServiceWebSocket<Message, Message>
   private void join(String user, WebSocket<Message> ws)
   {
     _user = user;
+    boolean isWebSocket = true;
 
-    _chat.join(user, (userList, e) -> {
+    _chat.join(user, isWebSocket, (users, e) -> {
       LOG.fine("user joined: " + user);
 
-      UserListMessage userListMsg = new UserListMessage().users(userList);
+      UserListMessage userListMsg = new UserListMessage().users(users);
 
       ws.next(userListMsg);
 

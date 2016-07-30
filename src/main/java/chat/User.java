@@ -47,8 +47,6 @@ public class User implements Comparable<User>
 
   public boolean isTimedout()
   {
-    System.err.println("User.isTimedout0: " + this);
-
     return ! _isWebSocket
            && _pollCount <= 0
            && (System.currentTimeMillis() - _lastActivityTimeMs >= 1000 * 30);

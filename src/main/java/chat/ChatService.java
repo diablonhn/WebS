@@ -121,25 +121,16 @@ public class ChatService
                           @Query("id") long messageIdStart,
                           RequestWeb request)
   {
-    System.err.println("ChatService.getMessages0");
-
     if (messageIdStart <= 0) {
       messageIdStart = Long.MAX_VALUE;
     }
 
     User user = _userMap.get(userName);
 
-    System.err.println("ChatService.getMessages1");
-
     user.startPoll();
 
-
     _scrollback.get(messageIdStart, (msgs, e) -> {
-      System.err.println("ChatService.getMessages2: " + user);
-
       user.endPoll();
-
-      System.err.println("ChatService.getMessages3: " + user);
 
       if (e != null) {
         request.fail(e);
